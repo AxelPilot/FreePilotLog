@@ -18,9 +18,6 @@
 
 namespace com\axelsmidt\freepilotlog\views;
 
-use com\axelsmidt\freepilotlog\models as models;
-use com\axelsmidt\freepilotlog\controllers as controllers;
-
 /**
  * Description of View
  *
@@ -28,14 +25,11 @@ use com\axelsmidt\freepilotlog\controllers as controllers;
  */
 class View {
 
+    /**
+     *
+     */
     public function __construct() {
-        ?>
 
-    <body<?php echo isset($_GET['onload']) ? ' onload="' . $_GET['onload'] . '"' : ''; ?>>
-        <div class="container">
-            <div id="Main">
-                <div id="Content">
-        <?php
     }
 
 }

@@ -18,6 +18,8 @@
 
 namespace com\axelsmidt\freepilotlog\views;
 
+use com\axelsmidt\freepilotlog\views as views;
+
 /**
  * Description of Footer
  *
@@ -34,63 +36,16 @@ class Footer {
 
             <div id="Header">
                 <header class="wrapper">
-                    <div class="logo"><a href="index.php"><img src="./images/logo.png" alt="Home" name="Insert_logo" id="Insert_logo" /></a></div>
+                    <!--<div class="logo"><a href="index.php"><img src="./images/logo.png" alt="Home" name="Insert_logo" id="Insert_logo" /></a></div>-->
 
                     <?php
+                   $loggedIn = ( isset($_SESSION['user_ID']) && isset($_SESSION['firstname']) && isset($_SESSION['lastname']) && isset($_SESSION['admin']) && ( substr($_SERVER['PHP_SELF'], -10) != 'logout.php' ) );
                     echo isset($_SESSION['user_ID']) && isset($_SESSION['firstname']) && isset($_SESSION['lastname']) ?
                             "<div class=\"header_title\">- " . $_SESSION['firstname'] . " " . $_SESSION['lastname'] . "</div>" : "";
+
+                    new views\MainMenu($loggedIn);
                     ?>
-                    
-                    <nav class="mainmenu"> 
-                        <ul class="nav">
 
-                            <?php
-                            $loggedIn = ( isset($_SESSION['user_ID']) && isset($_SESSION['firstname']) && isset($_SESSION['lastname']) && isset($_SESSION['admin']) && ( substr($_SERVER['PHP_SELF'], -10) != 'logout.php' ) );
-
-                            if ($loggedIn) {
-                                if ($_SESSION['admin'] == "Y") {
-                                    ?>
-                            
-                                    <li><a href="#">ADMIN</a>
-                                        <ul class="nav navleft">
-                                            <li><a href="register_event.php">REGISTER EXERCISE</a></li>
-                                            <li><a href="update_event.php">UPDATE EXERCISE</a></li>
-                                            <li><a href="delete_event.php">DELETE EXERCISE</a></li>
-                                            <li><a href="register_competitor.php">REGISTER CONTESTANT</a></li>
-                                        </ul>
-                                    </li>
-                                    <?php
-                                }
-                                ?>
-
-                                <li><a href="purchase_ticket.php">BUY TICKETS</a></li>
-
-                                <li><a href="#">MY ACCOUNT</a>
-                                    <ul class="nav navright">
-                                        <?php
-                                        if ($_SESSION['admin'] == "N") {
-                                            ?>
-                                            <li><a href="apply_for_admin.php">APPLY FOR ADMIN</a></li>
-                                            <?php
-                                        }
-                                        ?>
-
-                                        <li><a href="change_password.php">CHANGE PASSWORD</a></li>
-                                        <li><a href="logout.php">LOG OUT</a></li>
-                                    </ul>
-                                </li>
-                                <?php
-                            } else {
-                                ?>
-                                
-                            <li><a href="login.php">SIGN IN</a></li>
-                            <li><a href="register_user.php">CREATE ACCOUNT</a></li>
-                                <?php
-                            }
-                            ?>
-                            
-                        </ul>
-                    </nav>
                 </header>
             </div>
 
