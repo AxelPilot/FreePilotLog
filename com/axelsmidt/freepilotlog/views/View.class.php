@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright (C) 2020 Axel Smidt <http://AxelSmidt.com>
  *
@@ -28,7 +27,16 @@ use com\axelsmidt\freepilotlog\controllers as controllers;
  * @author Axel Smidt <http://AxelSmidt.com>
  */
 class View {
+
     public function __construct() {
-        new Footer();
+        ?>
+
+    <body<?php echo isset($_GET['onload']) ? ' onload="' . $_GET['onload'] . '"' : ''; ?>>
+        <div class="container">
+            <div id="Main">
+                <div id="Content">
+        <?php
     }
+
 }
+                
