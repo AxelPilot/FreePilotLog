@@ -19,23 +19,11 @@
 
 namespace com\axelsmidt\freepilotlog\controllers;
 
-use com\axelsmidt\freepilotlog\models as models;
-
 /**
- * Description of Login
+ * Description of Controller
  *
  * @author Axel Smidt <http://AxelSmidt.com>
  */
-class Login extends Controller {
-    public function __construct() {
-        $user = new models\User(NULL, $_POST['email'], $_POST['password']);
+class Controller {
 
-        $_SESSION['email'] = $user->get_email();
-        $_SESSION['firstname'] = $user->get_firstname();
-        $_SESSION['lastname'] = $user->get_lastname();
-
-        ob_end_clean(); // Delete the buffer.
-        header( "Location: index.php" );
-        exit(); // Quit the script.
-    }
 }

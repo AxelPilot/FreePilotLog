@@ -23,13 +23,69 @@ namespace com\axelsmidt\freepilotlog\views;
  *
  * @author Axel Smidt <http://AxelSmidt.com>
  */
-class View {
+abstract class View {
 
-    /**
+    protected $user;
+    protected $heading;
+    protected $validation_exceptions;
+
+   /**
      *
      */
     public function __construct() {
+        // Displays the heading of the current page.
+        $this->show_heading(); 
+        
+        // Form data confirmed action.
+        if (filter_input(INPUT_POST, 'confirmed')) {
+            $this->confirmed_action();
+        }
 
+        // Form data submitted action.
+        elseif (filter_input(INPUT_POST, 'submitted')) {
+            $this->submitted_action();
+        }
+
+        // Initial (form not yet submitted) action.
+        else {
+            $this->initial_action();
+        }
+    }
+
+    /**
+     * Initial action to be performed (when form data is not yet submitted).
+     */
+    abstract protected function initial_action();
+
+    /**
+     * Action to be performed when form data is submitted.
+     */
+    abstract protected function submitted_action();
+
+    /**
+     * Action to be performed when form data is confirmed.
+     */
+    abstract protected function confirmed_action();
+
+    /**
+     * Returns the heading of the current page.
+     */
+    protected function get_heading() {
+        return isset($this->heading) ? $this->heading : NULL;
+    }
+
+    /**
+     * Sets the heading of the current page.
+     */
+    protected function set_heading($heading) {
+        $this->heading = $heading;
+    }
+
+    /**
+     * Displays the heading of the current page.
+     */
+    protected function show_heading() {
+        ?><h1><?php echo $this->heading; ?></h1><?php
     }
 
 }

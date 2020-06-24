@@ -22,20 +22,19 @@ namespace com\axelsmidt\freepilotlog\controllers;
 use com\axelsmidt\freepilotlog\models as models;
 
 /**
- * Description of Login
  *
- * @author Axel Smidt <http://AxelSmidt.com>
  */
-class Login extends Controller {
+class Register_User extends Controller {
+
     public function __construct() {
-        $user = new models\User(NULL, $_POST['email'], $_POST['password']);
+        $user = new models\User($_POST['email'], $_POST['password1'],
+                $_POST['password2'], $_POST['lastname'], $_POST['firstname']);
 
-        $_SESSION['email'] = $user->get_email();
-        $_SESSION['firstname'] = $user->get_firstname();
-        $_SESSION['lastname'] = $user->get_lastname();
+        $user->save_to_db();
 
-        ob_end_clean(); // Delete the buffer.
-        header( "Location: index.php" );
+        // If successful, redirect to index.php and display a confirmation message.
+        header("Location: index.php?msg=Thank you for registering! A confirmation email has been sent to your email address.<br />Please click the link in the email to activate your account.");
         exit(); // Quit the script.
     }
+
 }

@@ -21,60 +21,54 @@ namespace com\axelsmidt\freepilotlog\models;
 
 use com\axelsmidt\aslib as aslib;
 
+/**
+ *
+ */
 class User extends Model {
 
-    protected $user_ID;
+    protected $email;
     protected $firstname;
     protected $lastname;
-    protected $address;
-    protected $postal_code;
-    protected $city;
-    protected $phone;
-    protected $email;
     protected $password = NULL;
     protected $activation_code = NULL;
     protected $registration_date;
-    protected $admin = 'N';
     protected $validation_messages = array();
 
     /**
      *
      */
-    public function __construct($user_ID,
+    public function __construct(
             $email = NULL,
-            $new_password = NULL,
+            $password = NULL,
             $confirmed_password = NULL,
             $lastname = NULL,
             $firstname = NULL,
-            $address = NULL,
-            $postal_code = NULL,
-            $city = NULL,
-            $phone = NULL,
             $throw_exceptions = aslib\Exception::THROW_ALL) {
-        // Retrieving the user account from the database based on user_ID.
-        if (isset($user_ID)) {
-            $this->user_ID = $user_ID;
+
+        // Retrieving the user account from the database based on email.
+        if (isset($email) && (!isset($lastname) || !isset($firstname))) {
+            $this->email = $email;
+            
+            // Throw an exception if the user doesn't exist.
             if (!$this->retrieve_from_db($throw_exceptions)) {
                 if ($throw_exceptions >= aslib\Exception::THROW_DB) {
-                    throw new aslib\DbException('Brukeren finnes ikke.');
+                    throw new aslib\DbException('The user doesn\'t exist.');
                 }
             }
-        } elseif (isset($email)) {
-            $this->email = $email;
 
-            // Verifying a correct password for the purpose of logging into an existing user
-            // account if $new_password is set.
-            if (isset($new_password) && !isset($confirmed_password) && !isset($lastname) && !isset($firstname) && !isset($address) && !isset($postal_code) && !isset($city) && !isset($phone)) {
-                if ($this->validate_email_and_password($email, $new_password, $throw_exceptions) === true) {
-                    if ($this->has_activated($new_password, $throw_exceptions)) {
+            // Verifying a correct password for the purpose of logging into an 
+            // existing user account if $new_password is set.
+            if (isset($password) && !isset($confirmed_password) && !isset($lastname) && !isset($firstname)) {
+                if ($this->validate_email_and_password($email, $password, $throw_exceptions) === true) {
+                    if ($this->has_activated($password, $throw_exceptions)) {
                         // Retrieving the user account data.
                         if (!$this->retrieve_from_db($throw_exceptions)) {
                             if ($throw_exceptions >= aslib\Exception::THROW_DB) {
-                                throw new aslib\DbException('Brukeren finnes ikke.');
+                                throw new aslib\DbException('The user doesn\'t exist.');
                             }
                         }
                     } else {
-                        throw new aslib\DbException('Du har ikke aktivert kontoen din.');
+                        throw new aslib\DbException('You have not activated your account.');
                     }
                 }
             }
@@ -88,22 +82,18 @@ class User extends Model {
             }
 
             // Creating a new user based on the constructor's input parameters for the purpose 
-            // of registering new user accounts if the user is not previously registered in 
+            // of registering new user accounts, if the user is not previously registered in 
             // the database.
             else {
-                $v = $this->validate_data($lastname, $firstname, $address, $postal_code, $city, $phone,
-                        $email, $new_password, $confirmed_password, $throw_exceptions);
+                $v = $this->validate_data($email, $lastname, $firstname,
+                        $password, $confirmed_password, $throw_exceptions);
                 if ($v === true) {
+                    $this->email = $email;
                     $this->lastname = $lastname;
                     $this->firstname = $firstname;
-                    $this->address = $address;
-                    $this->postal_code = $postal_code;
-                    $this->city = $city;
-                    $this->phone = $phone;
-                    $this->email = $email;
 
-                    if (isset($new_password)) {
-                        $this->password = $new_password;
+                    if (isset($password)) {
+                        $this->password = $password;
                         $this->activation_code = $this->create_activation_code();
                     }
                 } elseif (is_array($v) && ( $throw_exceptions < aslib\Exception::THROW_VALIDATION )) {
@@ -119,7 +109,7 @@ class User extends Model {
     public function change_password($old_password, $new_password, $confirmed_password, $throw_exceptions = aslib\Exception::THROW_ALL) {
         if (isset($old_password) && isset($new_password) && isset($confirmed_password) && ( $this->validate_password($old_password, $new_password, $confirmed_password) === true )) {
             if (!$this->save_new_password_to_db($new_password) && $throw_exceptions >= aslib\Exception::THROW_DB_ERROR) {
-                throw new aslib\DbErrorException($technical_error);
+                throw new aslib\DbErrorException("We apologize, but a technical error has occured.");
                 return false;
             } else {
                 return true;
@@ -128,20 +118,24 @@ class User extends Model {
     }
 
     /**
-     *
+     * Checks if an account, identified by the user's email address, has
+     * been activated or not.
+     * 
+     * Returns true if the account is activated.
+     * Returns false if the account has not been activated.
      */
     public function has_activated($password, $throw_exceptions = aslib\Exception::THROW_ALL) {
         $ok = false;
         if ($this->exists_in_db($throw_exceptions)) {
-            if ($mysqli = aslib\MySQLi::connect2db($technical_error, $throw_exceptions)) {
+            if ($mysqli = aslib\MySQLi::connect2db("We apologize, but a technical error has occured.", $throw_exceptions)) {
                 // Query the database.
                 $query = "
-				SELECT user_ID
+				SELECT email
 				FROM " . TABLE_PREFIX . "user
 				WHERE
-				email='" . $this->email . "'
+				UPPER(email)=UPPER('" . $this->email . "')
 				AND
-				password=SHA('" . $password . "')
+				password=SHA2('" . $password . "', 256)
 				AND
 				activation_code IS NULL";
 
@@ -155,31 +149,8 @@ class User extends Model {
     }
 
     /**
-     *
-     */
-    public function apply_for_admin($throw_exceptions = aslib\Exception::THROW_ALL) {
-        $request = new Admin_Request($this, $throw_exceptions);
-        return $request->apply($throw_exceptions);
-    }
-
-    /**
-     *
-     */
-    public function approve_admin($admin_activation_code, $throw_exceptions = aslib\Exception::THROW_ALL) {
-        $request = new Admin_Request($this, $throw_exceptions);
-        return $request->approve($admin_activation_code, Admin_Request::APPROVED, $throw_exceptions);
-    }
-
-    /**
-     *
-     */
-    public function deny_admin($admin_activation_code, $throw_exceptions = aslib\Exception::THROW_ALL) {
-        $request = new Admin_Request($this, $throw_exceptions);
-        return $request->approve($admin_activation_code, Admin_Request::DENIED, $throw_exceptions);
-    }
-
-    /**
-     *
+     * Creates and returns an activation code to be stored in the database
+     * along with a newly registered user.
      */
     public function create_activation_code() {
         // Create the activation code
@@ -189,25 +160,25 @@ class User extends Model {
     /**
      * Saves the user to the database.
      *
-     * Returns the auto generated user_ID upon success.
+     * Returns the user's email address upon success.
      * Returns false upon failure.
      */
     public function save_to_db($throw_exceptions = aslib\Exception::THROW_ALL) {
         if (!$this->exists_in_db($throw_exceptions)) {
-            if ($mysqli = aslib\MySQLi::connect2db($technical_error, $throw_exceptions)) {
+            if ($mysqli = aslib\MySQLi::connect2db("We apologize, but a technical error has occured.", $throw_exceptions)) {
                 // Add the user to the database.
                 $query = "
-				INSERT INTO " . TABLE_PREFIX . "user (firstname, lastname, address, postal_code, city, phone, email, password, activation_code, registration_date) 
-				VALUES ('" . $mysqli->escape_data($this->firstname) . "',
+				INSERT INTO " . TABLE_PREFIX . "user (email, firstname, lastname, address, postal_code, city, phone, password, activation_code, registration_date) 
+				VALUES ('" . $mysqli->escape_data($this->email) . "',
+                                '" . $mysqli->escape_data($this->firstname) . "',
 				'" . $mysqli->escape_data($this->lastname) . "',
 				'" . $mysqli->escape_data($this->address) . "',
 				'" . $mysqli->escape_data($this->postal_code) . "',
 				'" . $mysqli->escape_data($this->city) . "',
-				'" . $mysqli->escape_data($this->phone) . "',
-				'" . $mysqli->escape_data($this->email) . "', ";
+				'" . $mysqli->escape_data($this->phone) . "', ";
 
                 $query .= isset($this->password) ?
-                        "SHA('" . $mysqli->escape_data($this->password) . "'),
+                        "SHA2('" . $mysqli->escape_data($this->password) . "', 256),
 				'" . $this->activation_code . "', " :
                         "NULL, NULL, ";
 
@@ -217,27 +188,24 @@ class User extends Model {
 
                 // If the data were successfully inserted into the database...
                 if ($mysqli->affected_rows == 1) {
-                    // Retrieves the auto generated user_ID from the database.
-                    $this->user_ID = $mysqli->insert_id;
-
                     $mysqli->close();
 
                     if (isset($this->password)) {
                         unset($this->password);
                         if (!$this->send_confirmation_email()) {
                             if ($throw_exceptions >= aslib\Exception::THROW_DB_ERROR) {
-                                throw new aslib\DbErrorException('Sending av bekreftelse pr e-post feilet.');
+                                throw new aslib\DbErrorException('The confirmation email couldn\'t be sent.');
                             }
                             return false;
                         }
                     }
-                    return $this->user_ID;
+                    return $this->email;
                 } else { // If query was unsuccessful.
                     $mysqli->close();
 
                     unset($this->password);
                     if ($throw_exceptions >= aslib\Exception::THROW_DB_ERROR) {
-                        throw new aslib\DbErrorException($technical_error);
+                        throw new aslib\DbErrorException("We apologize, but a technical error has occured.");
                     }
                     return false;
                 }
@@ -245,8 +213,8 @@ class User extends Model {
         } else {
             unset($this->password);
             if ($throw_exceptions >= aslib\Exception::THROW_DB) {
-                throw new aslib\DbException('Den e-postadressen er allerede blitt registrert.<br />
-				Hvis du har glemt passordet ditt, kan du bruke \'Glemt passord\'-lenken for å nullstille passordet ditt.');
+                throw new aslib\DbException('This email address has already been registered.<br />
+				If you have forgotten your passwork, you can use the \'Forgotten password\' link to reset your password.');
             }
             return false;
         }
@@ -257,10 +225,10 @@ class User extends Model {
      */
     protected function save_new_password_to_db($password) {
         $ok = false;
-        if ($mysqli = aslib\MySQLi::connect2db($technical_error)) {
+        if ($mysqli = aslib\MySQLi::connect2db("We apologize, but a technical error has occured.")) {
             $query = "
 			UPDATE " . TABLE_PREFIX . "user
-			SET password = SHA('" . $password . "')
+			SET password = SHA2('" . $password . "', 256)
 			WHERE
 			user_ID = " . $_SESSION['user_ID'];
 
@@ -282,18 +250,15 @@ class User extends Model {
      */
     protected function retrieve_from_db($throw_exceptions = aslib\Exception::THROW_ALL) {
         if (( $a = $this->exists_in_db($throw_exceptions) ) && is_array($a)) {
-            $this->user_ID = $a['user_ID'];
+            $this->email = $a['email'];
             $this->firstname = $a['firstname'];
             $this->lastname = $a['lastname'];
             $this->address = $a['address'];
             $this->postal_code = $a['postal_code'];
             $this->city = $a['city'];
             $this->phone = $a['phone'];
-            $this->email = $a['email'];
             $this->activation_code = $a['activation_code'];
             $this->registration_date = $a['registration_date'];
-            $this->admin = $a['admin'];
-            $this->activation_admin = $a['activation_admin'];
 
             return $a;
         } else {
@@ -304,19 +269,17 @@ class User extends Model {
     /**
      * Checks if the user exists in the database.
      *
-     * Returns the user's user_ID if the user exists in the database.
+     * Returns the user's email if the user exists in the database.
      * Returns false if the user doesn't exist in the database.
      */
     public function exists_in_db($throw_exceptions = aslib\Exception::THROW_ALL) {
-        if ($mysqli = aslib\MySQLi::connect2db($technical_error, $throw_exceptions)) {
+        if ($mysqli = aslib\MySQLi::connect2db("We apologize, but a technical error has occured.", $throw_exceptions)) {
             // Checking if an identical user is already registered in the database.
             $query = "
-			SELECT user_ID, firstname, lastname, address, postal_code, city, phone, email, activation_code, registration_date, admin, activation_admin
+			SELECT email, firstname, lastname, address, postal_code, city, phone, activation_code, registration_date
 			FROM " . TABLE_PREFIX . "user
-			WHERE ";
-            $query .= isset($this->user_ID) ?
-                    "user_ID = " . $this->user_ID :
-                    "UPPER(email) = UPPER('" . $this->email . "')";
+			WHERE
+                        UPPER(email) = UPPER('" . $this->email . "')";
 
             if ($result = $mysqli->query($query)) {
                 // If the user is previously registered.
@@ -334,7 +297,7 @@ class User extends Model {
             } else {
                 $mysqli->close();
                 if ($throw_exceptions >= aslib\Exception::THROW_DB_ERROR) {
-                    throw new aslib\DbErrorException($technical_error);
+                    throw new aslib\DbErrorException("We apologize, but a technical error has occured.");
                 }
                 return false;
             }
@@ -346,12 +309,12 @@ class User extends Model {
      */
     protected function send_confirmation_email() {
         // Compose the confirmation email.
-        $body = "Kjære " . $this->firstname . " " . $this->lastname . "!\r\n\r\n";
-        $body .= "Takk for din registrering.\r\n\r\n";
-        $body .= "Vennligst klikk på lenken under for å aktivere kontoen din:\r\n\r\n";
+        $body = "Dear " . $this->firstname . " " . $this->lastname . "!\r\n\r\n";
+        $body .= "Thank you for registering a new account with Free Pilot Logbook.\r\n\r\n";
+        $body .= "Please click the link below to activate your account:\r\n\r\n";
         $body .= getBaseUrl() . "/activate.php?x=" . $this->user_ID . "&y=" . $this->activation_code;
 
-        $subject = 'Registreringsbekreftelse';
+        $subject = 'Registration confirmation';
 
         $email = new Email($this->email, $subject, $body);
         return $email->send();
@@ -471,7 +434,7 @@ class User extends Model {
 
         // Check for an email address.
         if (!isset($email) || ( $email == "" ) || ( preg_match("/^[[:alnum:]][a-z0-9_\.\-]*@[a-z0-9\.\-]+\.[a-z]{2,4}$/i", trim($email)) !== 1 )) {
-            $exceptions['email'] = 'Ugyldig e-postadresse!';
+            $exceptions['email'] = 'You entered an invalid email address.';
         }
 
         if (count($exceptions) > 0) {
@@ -539,7 +502,7 @@ class User extends Model {
     protected function match_password_against_db($password, $throw_exceptions = aslib\Exception::THROW_ALL) {
         $ok = false;
         // Connect to the database.
-        if ($mysqli = aslib\MySQLi::connect2db($technical_error, $throw_exceptions)) {
+        if ($mysqli = aslib\MySQLi::connect2db("We apologize, but a technical error has occured.", $throw_exceptions)) {
             // Retrieve the user's current password from the database
             // and compare it against the entered password.
             $query = "
@@ -565,24 +528,6 @@ class User extends Model {
             $mysqli->close();
         }
         return $ok;
-    }
-
-    /**
-     * Returns true if the user is an administrator.
-     * Returns false otherwise.
-     */
-    public function is_admin() {
-        return ( $this->admin == 'Y' );
-    }
-
-    /**
-     * Returns true if the user is not an administrator and has not applied 
-     * to become an administrator.
-     *
-     * Returns false otherwise.
-     */
-    public function applied_for_admin() {
-        return ( $this->is_admin() || ( $this->admin == 'applied' ) );
     }
 
     /**
@@ -639,13 +584,6 @@ class User extends Model {
      */
     public function get_email() {
         return $this->email;
-    }
-
-    /**
-     * Admin Activation Code get function.
-     */
-    public function get_admin_activation_code() {
-        return $this->activation_admin;
     }
 
     /**

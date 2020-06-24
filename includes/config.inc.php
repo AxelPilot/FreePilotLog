@@ -1,6 +1,6 @@
 <?php
 
-/* 
+/*
  * Copyright (C) 2020 Axel Smidt <http://AxelSmidt.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,27 +21,24 @@
 // ************************************************************************
 // No error messages will be shown to the user.
 
-error_reporting( E_ALL );
+error_reporting(E_ALL);
 // error_reporting( 0 );
-
 // ************************************************************************
 // ************************************************************************
-
 // ** MySQL settings ** //
-define( 'DB_NAME', 'freepilotlog' );            // The name of the database
-define( 'DB_USER', 'root' );            // Your MySQL Username
-define( 'DB_PASSWORD', '' );               // Your MySQL Password
-define( 'DB_HOST', '' ); // Your MySQL Hostmane
-define( 'DB_CHARSET', 'utf8' );            // The character set of the database
-define( 'DB_COLLATE', '' );
+define('DB_NAME', 'freepilotlog');            // The name of the database
+define('DB_USER', 'root');            // Your MySQL Username
+define('DB_PASSWORD', '');               // Your MySQL Password
+define('DB_HOST', ''); // Your MySQL Hostmane
+define('DB_CHARSET', 'utf8');            // The character set of the database
+define('DB_COLLATE', '');
 
 // ************************************************************************
 // ************************************************************************
 // You can have multiple installations in one database if you give each 
 // installation a unique prefix.
-
 // Only numbers, letters, and underscores please!
-define( 'TABLE_PREFIX', '' );
+define('TABLE_PREFIX', '');
 
 // ************************************************************************
 // ************************************************************************
@@ -50,15 +47,14 @@ define( 'TABLE_PREFIX', '' );
 /**
  * Custom error Handler.
  */
-set_error_Handler(function ($errno, $errstr, $errfile, $errline)
-{
-	$error = date('d.m.Y H:i') . ' ';
-	$error .= $errfile . ' ';
-	$error .= $errline . ' ';
-	$error .= $errno . ' ';
-	$error .= $errstr . "\r\n";
-	
-	error_log($error, 3, "error/errorlog.txt");
+set_error_Handler(function ($errno, $errstr, $errfile, $errline) {
+    $error = date('d.m.Y H:i') . ' ';
+    $error .= $errfile . ' ';
+    $error .= $errline . ' ';
+    $error .= $errno . ' ';
+    $error .= $errstr . "\r\n";
+
+    error_log($error, 3, "error/errorlog.txt");
 }, E_ALL);
 
 /**
@@ -72,22 +68,16 @@ spl_autoload_register(function ($class) {
  * Returns true if the user is logged in.
  * Redirects the user to the login page if the user is not logged in.
  */
-function is_loggedIn( $ajax = false )
-{
-	// If no user_ID or first_name variable exists, redirect the user.
-	if ( !isset( $_SESSION[ 'user_ID' ] ) || !isset( $_SESSION[ 'firstname' ] ) 
-		|| !isset( $_SESSION[ 'lastname' ] ) || !isset( $_SESSION[ 'admin' ] ) )
-	{
-		if( !$ajax )
-		{
-			new Login( get_filename_with_url_params() );
-		}
-		return false;
-	}
-	else
-	{
-		return true;
-	}
+function is_loggedIn($ajax = false) {
+    // If no user_ID or first_name variable exists, redirect the user.
+    if (!isset($_SESSION['user_ID']) || !isset($_SESSION['firstname']) || !isset($_SESSION['lastname'])) {
+        if (!$ajax) {
+            new Login(get_filename_with_url_params());
+        }
+        return false;
+    } else {
+        return true;
+    }
 }
 
 ob_start(); // Start output buffering.

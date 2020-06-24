@@ -34,33 +34,30 @@ class MainMenu {
             <ul class="nav">
                 <?php
                 if ($this->loggedIn) {
-                    if ($_SESSION['admin'] == "Y") {
                         ?>
 
-                        <li><a href="#">ADMIN</a>
-                            <ul class="nav navleft">
-                                <li><a href="register_event.php">REGISTER EXERCISE</a></li>
-                                <li><a href="update_event.php">UPDATE EXERCISE</a></li>
-                                <li><a href="delete_event.php">DELETE EXERCISE</a></li>
-                                <li><a href="register_competitor.php">REGISTER CONTESTANT</a></li>
-                            </ul>
-                        </li>
-                        <?php
-                    }
-                    ?>
+                <li><a href="addflight.php"><b>+ ADD FLIGHT</b></a></li>
 
-                    <li><a href="purchase_ticket.php">BUY TICKETS</a></li>
+                    <li><a href="#">LOGBOOK</a>
+                    <ul class="nav navleft">
+                         <li><a href="option1.php">OPTION 1</a></li>
+                         <li><a href="option2.php">OPTION 2</a></li>
+                         <li><a href="option3.php">OPTION 3</a></li>
+                         <li><a href="option4.php">OPTION 4</a></li>
+                     </ul>
+                     </li>
 
-                    <li><a href="#">MY ACCOUNT</a>
+                    <li><a href="#">AIRCRAFT</a>
+                    <ul class="nav navleft">
+                         <li><a href="option1.php">OPTION 1</a></li>
+                         <li><a href="option2.php">OPTION 2</a></li>
+                         <li><a href="option3.php">OPTION 3</a></li>
+                         <li><a href="option4.php">OPTION 4</a></li>
+                     </ul>
+                     </li>
+
+                    <li><a href="#">PROFILE</a>
                         <ul class="nav navright">
-                            <?php
-                            if ($_SESSION['admin'] == "N") {
-                                ?>
-                                <li><a href="apply_for_admin.php">APPLY FOR ADMIN</a></li>
-                                <?php
-                            }
-                            ?>
-
                             <li><a href="change_password.php">CHANGE PASSWORD</a></li>
                             <li><a href="logout.php">LOG OUT</a></li>
                         </ul>

@@ -18,8 +18,6 @@
 
 namespace com\axelsmidt\freepilotlog\views;
 
-use com\axelsmidt\freepilotlog\views as views;
-
 /**
  * Description of Footer
  *
@@ -30,53 +28,35 @@ class Footer {
     public function __construct() {
         ?>
 
-                </div> <!-- End of class "Content" -->
-            </div> <!-- End of class "Main" -->
-<!-- End of changeable content -->
+        </div> <!-- End of class "Content" -->
+        </div> <!-- End of class "Main" -->
+        <!-- End of changeable content -->
 
-            <div id="Header">
-                <header class="wrapper">
-                    <!--<div class="logo"><a href="index.php"><img src="./images/logo.png" alt="Home" name="Insert_logo" id="Insert_logo" /></a></div>-->
+        <div id="Header">
+            <header class="wrapper">
+                <!-- Display logo on top menubar -->
+                <div class="logo"><a href="index.php"><img src="./images/logo.png" alt="Home" name="Insert_logo" id="Insert_logo" /></a></div>
 
-                    <?php
-                   $loggedIn = ( isset($_SESSION['user_ID']) && isset($_SESSION['firstname']) && isset($_SESSION['lastname']) && isset($_SESSION['admin']) && ( substr($_SERVER['PHP_SELF'], -10) != 'logout.php' ) );
-                    echo isset($_SESSION['user_ID']) && isset($_SESSION['firstname']) && isset($_SESSION['lastname']) ?
-                            "<div class=\"header_title\">- " . $_SESSION['firstname'] . " " . $_SESSION['lastname'] . "</div>" : "";
-
-                    new views\MainMenu($loggedIn);
-                    ?>
-
-                </header>
-            </div>
-
-            <div id="RightBar">
                 <?php
-                if ($loggedIn) {
-                    $notification_list = new Notification_List($_SESSION['user_ID']);
-                    $notification_list->show();
-                }
+                // Display username (if logged in) on top menubar.
+                $loggedIn = ( isset($_SESSION['email']) && isset($_SESSION['firstname']) && isset($_SESSION['lastname']) && ( substr($_SERVER['PHP_SELF'], -10) != 'logout.php' ) );
+                echo isset($_SESSION['email']) && isset($_SESSION['firstname']) && isset($_SESSION['lastname']) ?
+                        "<div class=\"header_title\">- " . $_SESSION['firstname'] . " " . $_SESSION['lastname'] . "</div>" : 
+                        "<div class=\"header_title\"></div>";
+
+                new MainMenu($loggedIn);
                 ?>
-                
-            </div>
-            <div class="clearfloat">
-            </div>
+
+            </header>
+        </div>
+
+        <div class="clearfloat">
+        </div>
         </div> <!-- End of class "container" -->
         <div id="fade_background" style="position:fixed; display:none; top:0; width:100%; height:100%; background:rgba(50,50,50,0.3); z-index:9998;">
         </div>
-
-        <div id="notification_lightbox" style="position:absolute; display:none; left:50%; top:42%; max-width:40%; background:rgba(255,255,255,0); border:none; z-index:9999;">
-            <div align="left" style="position:relative; display:inline-block; left:-50%; margin-top:-50%; border:none; background:rgba(255,255,255,1); box-shadow:0px 2px 15px 4px #555; border-radius:20px; padding:0;">
-                <div id="notification_lightbox_title" align="center" style="margin:25px 20px 0 20px;">
-                </div>
-                <div id="notification_lightbox_content" style="max-height:300px; overflow-y:auto; margin:0px 20px;">
-                </div>
-                <div align="center" style="margin-top:17px; padding:0 20px 20px 20px;">
-                    <input type="button" style="padding:3px 10px; font-weight:900;" onclick="hide_and_empty_lightbox()" value="Close" />
-                </div>
-            </div>
-        </div>
-    </body>
-</html>
+        </body>
+        </html>
         <?php
         // Flush the buffered output.
         ob_end_flush();

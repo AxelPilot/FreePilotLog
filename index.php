@@ -22,6 +22,5 @@ use com\axelsmidt\freepilotlog\views as views;
 require_once 'includes' . DIRECTORY_SEPARATOR . 'config.inc.php';
 require_once 'includes' . DIRECTORY_SEPARATOR . 'header.inc.php';
 
-new views\View();
 new views\Footer();
 ?>

@@ -18,22 +18,22 @@
 
 namespace com\axelsmidt\freepilotlog\views;
 
-use com\axelsmidt\freepilotlog\controllers;
+use com\axelsmidt\freepilotlog\controllers as controllers;
 
 /**
  *
  */
-class Login extends View {
+class Register_User extends View {
 
-    protected $url;
-    protected $heading = 'Sign Into Your Account';
+    protected $user;
+    protected $heading = 'Create User Account';
     protected $validation_exceptions;
 
     /**
      *
      */
     protected function initial_action() {
-        new Login_Form($this->url, $this->validation_exceptions);
+        new Register_User_Form($this->validation_exceptions);
     }
 
     /**
@@ -42,21 +42,18 @@ class Login extends View {
     protected function submitted_action() {
         // Save the user to the database.
         try {
-            new controllers\Login();
-        } catch (aslib\DbErrorException $e) {
-            ?>
-            <div class="Error"><?php echo $e->getArrayMessage(); ?></div>
-            <p><div class="Error">A technincal error occured. Please try again later.</div></p>
-            <?php
+            new controllers\Register_User();
+        } catch (aslib\DbErrorException $e) { // If unsuccessul, catch exceptions and return to registration form.
+            ?><div class="Error"><?php echo $e->getArrayMessage(); ?></div>
+            <p><div class="Error">A technical error has occured. Please try again later.</div></p><?php
         } catch (aslib\DbException $e) {
-            ?>
-            <p><div class="Error"><?php echo $e->getArrayMessage(); ?></div></p>
-            <?php
+            ?><div class="Error"><?php echo $e->getArrayMessage(); ?></div>
+            <p><div class="Error">A technical error has occured. Please try again.</div></p><?php
         } catch (aslib\FormValidationException $e) {
             $this->validation_exceptions = $e->getArrayMessage();
         }
 
-        new views\Login_Form($this->url, $this->validation_exceptions);
+        new Register_User_Form($this->validation_exceptions);
     }
 
     /**
