@@ -85,4 +85,4 @@ function is_loggedIn() {
 }
 
 ob_start(); // Start output buffering.
-session_start(); // Initialize a session
+session_start(); // Initialize a session.
