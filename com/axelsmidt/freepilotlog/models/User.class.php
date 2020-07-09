@@ -45,12 +45,33 @@ class User extends Model {
             $firstname = NULL,
             $throw_exceptions = aslib\Exception::THROW_ALL) {
 
-        
-        // Creating a new user based on the constructor's input parameters for the purpose 
-        // of registering new user accounts, if the user is not previously registered in 
-        // the database.
+
+        // Logging into an existing user account and verifying that the user
+        // has entered the correct password.
+        // 
+        // Retrieving the user account from the database based on the user's
+        // email address.
+        if (isset($email) && isset($password) && !isset($confirmed_password) && !isset($lastname) && !isset($firstname)) {
+            $this->email = $email;
+
+            if ($this->validate_email_and_password($email, $password, $throw_exceptions) === true) {
+                if ($this->has_activated($password, $throw_exceptions)) {
+                    // Retrieving the user account data.
+                    if (!$this->retrieve_from_db($throw_exceptions)) {
+                        if ($throw_exceptions >= AsException::THROW_DB) {
+                            throw new AsDbException('The user doesn\'t exist.');
+                        }
+                    }
+                } else {
+                    throw new AsDbException('You have not activated your account.');
+                }
+            }
+        }
+
+        // Creating a new user for the purpose of registering a new user account,
+        // if the user is not previously registered in the database.
         if (isset($email) && isset($password) && isset($confirmed_password) && isset($lastname) && isset($firstname)) {
-            $v = $this->validate_data($lastname, $firstname, $email, 
+            $v = $this->validate_data($lastname, $firstname, $email,
                     $password, $confirmed_password, $throw_exceptions);
             if ($v === true) {
                 $this->email = $email;
@@ -58,9 +79,7 @@ class User extends Model {
                 $this->firstname = $firstname;
                 $this->password = $password;
                 $this->activation_code = $this->create_activation_code();
-            } 
-            
-            elseif (is_array($v) && ( $throw_exceptions < aslib\Exception::THROW_VALIDATION )) {
+            } elseif (is_array($v) && ( $throw_exceptions < aslib\Exception::THROW_VALIDATION )) {
                 $this->validation_messages = array_merge($this->validation_messages, $v);
             }
         }
@@ -267,11 +286,11 @@ class User extends Model {
         $body = "Dear " . $this->firstname . " " . $this->lastname . "!\r\n\r\n";
         $body .= "Thank you for registering a new account with Free Pilot Logbook.\r\n\r\n";
         $body .= "Please click the link below to activate your account:\r\n\r\n";
-        $body .= getBaseUrl() . "/activate.php?x=" . $this->user_ID . "&y=" . $this->activation_code;
+        $body .= \SITE_URL . "/activate.php?x=" . $this->user_ID . "&y=" . $this->activation_code;
 
         $subject = 'Registration confirmation';
 
-        $email = new Email($this->email, $subject, $body);
+        $email = new aslib\Email($this->email, $subject, $body);
         return $email->send();
     }
 

@@ -31,20 +31,20 @@ class Register_User extends View {
     protected $validation_exceptions;
 
     /**
-     *
+     * User registration form.
      */
     protected function initial_action() {
         new Register_User_Form($this->validation_exceptions);
     }
 
     /**
-     *
+     * Save the user to the database. If unsuccessful,
+     * catch exceptions and return to registration form.
      */
     protected function submitted_action() {
-        // Save the user to the database.
         try {
             new controllers\Register_User();
-        } catch (aslib\DbErrorException $e) { // If unsuccessfull, catch exceptions and return to registration form.
+        } catch (aslib\DbErrorException $e) {
             ?><div class="Error"><?php echo $e->getArrayMessage(); ?></div>
             <p><div class="Error">A technical error has occured. Please try again later.</div></p><?php
         } catch (aslib\DbException $e) {
@@ -58,7 +58,7 @@ class Register_User extends View {
     }
 
     /**
-     *
+     * Not used.
      */
     protected function confirmed_action() {
         

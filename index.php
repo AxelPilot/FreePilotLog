@@ -23,4 +23,3 @@ require_once 'includes' . DIRECTORY_SEPARATOR . 'config.inc.php';
 require_once 'includes' . DIRECTORY_SEPARATOR . 'header.inc.php';
 
 new views\Footer();
-?>

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (C) 2020 Axel Smidt <http://AxelSmidt.com>
  *

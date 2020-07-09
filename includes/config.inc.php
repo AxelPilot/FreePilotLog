@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+use com\axelsmidt\freepilotlog\controllers as controllers;
+
 // ************************************************************************
 // ************************************************************************
 // No error messages will be shown to the user.
@@ -26,11 +28,11 @@ error_reporting(E_ALL);
 // ************************************************************************
 // ************************************************************************
 // ** MySQL settings ** //
-define('DB_NAME', 'freepilotlog');            // The name of the database
-define('DB_USER', 'root');            // Your MySQL Username
-define('DB_PASSWORD', '');               // Your MySQL Password
-define('DB_HOST', ''); // Your MySQL Hostmane
-define('DB_CHARSET', 'utf8');            // The character set of the database
+define('DB_NAME', 'freepilotlog');  // The name of the database
+define('DB_USER', 'root');          // Your MySQL Username
+define('DB_PASSWORD', '');          // Your MySQL Password
+define('DB_HOST', '');              // Your MySQL Hostmane
+define('DB_CHARSET', 'utf8');       // The character set of the database
 define('DB_COLLATE', '');
 
 // ************************************************************************
@@ -38,7 +40,16 @@ define('DB_COLLATE', '');
 // You can have multiple installations in one database if you give each 
 // installation a unique prefix.
 // Only numbers, letters, and underscores please!
+
 define('TABLE_PREFIX', '');
+
+// ************************************************************************
+// ************************************************************************
+
+// ************************************************************************
+// ************************************************************************
+
+define('SITE_URL', 'http://www.freepilotlog.com');
 
 // ************************************************************************
 // ************************************************************************
@@ -68,16 +79,9 @@ spl_autoload_register(function ($class) {
  * Returns true if the user is logged in.
  * Redirects the user to the login page if the user is not logged in.
  */
-function is_loggedIn($ajax = false) {
+function is_loggedIn() {
     // If no user_ID or first_name variable exists, redirect the user.
-    if (!isset($_SESSION['user_ID']) || !isset($_SESSION['firstname']) || !isset($_SESSION['lastname'])) {
-        if (!$ajax) {
-            new Login(get_filename_with_url_params());
-        }
-        return false;
-    } else {
-        return true;
-    }
+    return (!isset($_SESSION['email']) || !isset($_SESSION['firstname']) || !isset($_SESSION['lastname'])) ? false : true;
 }
 
 ob_start(); // Start output buffering.
