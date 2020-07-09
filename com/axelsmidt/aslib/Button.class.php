@@ -51,21 +51,20 @@ class Button extends GUI {
      *
      */
     public function show() {
-        echo '<div class="' . $this->float . '">' . "\r\n";
-        echo '<input type="' . $this->type . '" name="' . $this->name . '" value="' . $this->value . '"';
-
+        ?><div class="<?php echo $this->float; ?>">
+        <input type="<?php echo $this->type; ?>" name="<?php echo $this->name; ?>" value="<?php echo $this->value; ?>"<?php
         if (count($this->styles) > 0) {
-            echo ' style="';
+            ?> style="<?php
             foreach ($this->styles as $style) {
                 echo $style;
             }
-            echo '" />' . "\r\n";
+            ?>" />
+            <?php
         }
-
-        echo '</div>' . "\r\n\r\n";
+        ?></div>
+        <?php
         ;
     }
 
 }
-
 ?>

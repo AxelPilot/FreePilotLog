@@ -18,7 +18,8 @@
 
 namespace com\axelsmidt\freepilotlog\views;
 
-use com\axelsmidt\freepilotlog\controllers;
+use com\axelsmidt\aslib as aslib;
+use com\axelsmidt\freepilotlog\controllers as controllers;
 
 /**
  *

@@ -35,7 +35,7 @@ $( function()
  */	
 	$( '#firstname' ).on( 'change', function()
 	{
-		validation( this, /^[a-zA-ZæøåÆØÅ\.\' \-]{2,30}$/, 'Ugyldig fornavn!' );
+		validation( this, /^[a-zA-ZæøåÆØÅ\.\' \-]{2,30}$/, 'You entered an invalid first name.' );
 	});
 
 // *****************************************************
@@ -44,43 +44,7 @@ $( function()
  */	
 	$( '#lastname' ).on( 'change', function()
 	{
-		validation( this, /^[a-zA-ZæøåÆØÅ\.\' \-]{2,30}$/, 'Ugyldig etternavn!' );
-	});
-
-// *****************************************************
-/**
- *
- */	
-	$( '#address' ).on( 'change', function()
-	{
-		validation( this, /^[a-zA-ZæøåÆØÅ0-9\.\' \-]{2,45}$/, 'Ugyldig adresse!' );
-	});
-
-// *****************************************************
-/**
- *
- */	
-	$( '#postal_code' ).on( 'change', function()
-	{
-		validation( this, /^[0-9]{4,5}$/, 'Ugyldig postnummer!' );
-	});
-
-// *****************************************************
-/**
- *
- */	
-	$( '#city' ).on( 'change', function()
-	{
-		validation( this, /^[a-zA-ZæøåÆØÅ\.\' \-]{2,40}$/, 'Ugyldig poststed!' );
-	});
-
-// *****************************************************
-/**
- *
- */	
-	$( '#phone' ).on( 'change', function()
-	{
-		validation( this, /^[0-9]{2,20}$/, 'Ugyldig telefonnummer!' );
+		validation( this, /^[a-zA-ZæøåÆØÅ\.\' \-]{2,30}$/, 'You entered an invalid last name.' );
 	});
 
 // *****************************************************
@@ -89,7 +53,7 @@ $( function()
  */	
 	$( '#email' ).on( 'change', function()
 	{
-		validation( this, /^[a-zA-Z0-9_\.\-]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,4}$/, 'Ugyldig e-postadresse!' );
+		validation( this, /^[a-zA-Z0-9_\.\-]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,4}$/, 'You entered an invalid email address.' );
 	});
 
 // *****************************************************
@@ -98,7 +62,7 @@ $( function()
  */	
 	$( '#password' ).on( 'change', function()
 	{
-		validation( this, /^[a-zA-Z0-9]{4,20}$/, 'Ugyldig passord!' );
+		validation( this, /^[a-zA-Z0-9]{4,20}$/, 'You entered an invalid password.' );
 	});
 
 // *****************************************************
@@ -109,7 +73,7 @@ $( function()
 	{
 		if( $( "#confirmed_password" ).val() != $( "#password" ).val() )
 		{
-			$( '#' + $( this ).attr( 'id' ) + '_exception' ).html( "Passordene stemmer ikke overens!" );
+			$( '#' + $( this ).attr( 'id' ) + '_exception' ).html( "The passwords do not match." );
 			$( '#' + $( this ).attr( 'id' ) ).css( 'border-color', '#F00' );
 		}
 		else

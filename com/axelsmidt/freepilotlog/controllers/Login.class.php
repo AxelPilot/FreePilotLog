@@ -28,14 +28,16 @@ use com\axelsmidt\freepilotlog\models as models;
  */
 class Login extends Controller {
     public function __construct() {
-        $user = new models\User(NULL, $_POST['email'], $_POST['password']);
+        // Sending login request to the model (models\User).
+        $user = new models\User($_POST['email'], $_POST['password']);
 
+        // If login was successful, create session variables with user info.
         $_SESSION['email'] = $user->get_email();
         $_SESSION['firstname'] = $user->get_firstname();
         $_SESSION['lastname'] = $user->get_lastname();
 
         ob_end_clean(); // Delete the buffer.
-        header( "Location: index.php" );
+        header( "Location: index.php" ); // Redirect to index.php.
         exit(); // Quit the script.
     }
 }

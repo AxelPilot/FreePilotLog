@@ -22,7 +22,7 @@ namespace com\axelsmidt\freepilotlog\models;
 use com\axelsmidt\aslib as aslib;
 
 /**
- * TODO: Rewrite entire class.
+ *
  */
 class User extends Model {
 
@@ -45,23 +45,62 @@ class User extends Model {
             $firstname = NULL,
             $throw_exceptions = aslib\Exception::THROW_ALL) {
 
-        
-        // Creating a new user based on the constructor's input parameters for the purpose 
-        // of registering new user accounts, if the user is not previously registered in 
-        // the database.
-        if (isset($email) && isset($password) && isset($confirmed_password) && isset($lastname) && isset($firstname)) {
-            $v = $this->validate_data($lastname, $firstname, $email, 
-                    $password, $confirmed_password, $throw_exceptions);
-            if ($v === true) {
-                $this->email = $email;
-                $this->lastname = $lastname;
-                $this->firstname = $firstname;
-                $this->password = $password;
-                $this->activation_code = $this->create_activation_code();
-            } 
+        // If $email and $password are set, but one or more of the other fields
+        // are not set, retrieve the user account from the database based on the
+        // user's email address and password.
+        if ((isset($email) && isset($password)) && (!isset($lastname) || !isset($firstname))) {
+            $this->email = $email;
             
-            elseif (is_array($v) && ( $throw_exceptions < aslib\Exception::THROW_VALIDATION )) {
-                $this->validation_messages = array_merge($this->validation_messages, $v);
+            // Throw an exception if the user doesn't exist.
+            if (!$this->retrieve_from_db($throw_exceptions)) {
+                if ($throw_exceptions >= aslib\Exception::THROW_DB) {
+                    throw new aslib\DbException('The user doesn\'t exist.');
+                }
+            }
+
+            // Verifying a correct password for the purpose of logging into an 
+            // existing user account if $new_password is set.
+            if (isset($password) && !isset($confirmed_password) && !isset($lastname) && !isset($firstname)) {
+                if ($this->validate_email_and_password($email, $password, $throw_exceptions) === true) {
+                    if ($this->has_activated($password, $throw_exceptions)) {
+                        // Retrieving the user account data.
+                        if (!$this->retrieve_from_db($throw_exceptions)) {
+                            if ($throw_exceptions >= aslib\Exception::THROW_DB) {
+                                throw new aslib\DbException('The user doesn\'t exist.');
+                            }
+                        }
+                    } else {
+                        throw new aslib\DbException('You have not activated your account.');
+                    }
+                }
+            }
+
+            // Retrieving the user account from the database based on the user's email address.
+            elseif ($this->exists_in_db($throw_exceptions)) {
+                if ($this->validate_email($email, $throw_exceptions) === true) {
+                    // Retrieving the user account data.
+                    $this->retrieve_from_db($throw_exceptions);
+                }
+            }
+
+            // Creating a new user based on the constructor's input parameters for the purpose 
+            // of registering new user accounts, if the user is not previously registered in 
+            // the database.
+            else {
+                $v = $this->validate_data($email, $lastname, $firstname,
+                        $password, $confirmed_password, $throw_exceptions);
+                if ($v === true) {
+                    $this->email = $email;
+                    $this->lastname = $lastname;
+                    $this->firstname = $firstname;
+
+                    if (isset($password)) {
+                        $this->password = $password;
+                        $this->activation_code = $this->create_activation_code();
+                    }
+                } elseif (is_array($v) && ( $throw_exceptions < aslib\Exception::THROW_VALIDATION )) {
+                    $this->validation_messages = array_merge($this->validation_messages, $v);
+                }
             }
         }
     }
@@ -93,14 +132,14 @@ class User extends Model {
             if ($mysqli = aslib\MySQLi::connect2db("We apologize, but a technical error has occured.", $throw_exceptions)) {
                 // Query the database.
                 $query = "
-                    SELECT email
-                    FROM " . TABLE_PREFIX . "user
-                    WHERE
-                    UPPER(email)=UPPER('" . $this->email . "')
-                    AND
-                    password=SHA2('" . $password . "', 256)
-                    AND
-                    activation_code IS NULL";
+				SELECT email
+				FROM " . TABLE_PREFIX . "user
+				WHERE
+				UPPER(email)=UPPER('" . $this->email . "')
+				AND
+				password=SHA2('" . $password . "', 256)
+				AND
+				activation_code IS NULL";
 
                 if (( $result = $mysqli->query($query) ) && ( $result->num_rows == 1 )) {
                     $result->free();
@@ -131,14 +170,19 @@ class User extends Model {
             if ($mysqli = aslib\MySQLi::connect2db("We apologize, but a technical error has occured.", $throw_exceptions)) {
                 // Add the user to the database.
                 $query = "
-                    INSERT INTO " . TABLE_PREFIX . "user (email, firstname, lastname, password, activation_code, registration_date) 
-                    VALUES ('" . $mysqli->escape_data($this->email) . "',
-                    '" . $mysqli->escape_data($this->firstname) . "',
-                    '" . $mysqli->escape_data($this->lastname) . "', ";
+				INSERT INTO " . TABLE_PREFIX . "user (email, firstname, lastname, address, postal_code, city, phone, password, activation_code, registration_date) 
+				VALUES ('" . $mysqli->escape_data($this->email) . "',
+                                '" . $mysqli->escape_data($this->firstname) . "',
+				'" . $mysqli->escape_data($this->lastname) . "',
+				'" . $mysqli->escape_data($this->address) . "',
+				'" . $mysqli->escape_data($this->postal_code) . "',
+				'" . $mysqli->escape_data($this->city) . "',
+				'" . $mysqli->escape_data($this->phone) . "', ";
 
                 $query .= isset($this->password) ?
                         "SHA2('" . $mysqli->escape_data($this->password) . "', 256),
-                    '" . $this->activation_code . "', " : "NULL, NULL, ";
+				'" . $this->activation_code . "', " :
+                        "NULL, NULL, ";
 
                 $query .= "NOW())";
 
@@ -172,7 +216,7 @@ class User extends Model {
             unset($this->password);
             if ($throw_exceptions >= aslib\Exception::THROW_DB) {
                 throw new aslib\DbException('This email address has already been registered.<br />
-				If you have forgotten your password, you can use the \'Forgotten password\' link to reset your password.');
+				If you have forgotten your passwork, you can use the \'Forgotten password\' link to reset your password.');
             }
             return false;
         }
@@ -185,10 +229,10 @@ class User extends Model {
         $ok = false;
         if ($mysqli = aslib\MySQLi::connect2db("We apologize, but a technical error has occured.")) {
             $query = "
-                UPDATE " . TABLE_PREFIX . "user
-                SET password = SHA2('" . $password . "', 256)
-                WHERE
-                user_ID = " . $_SESSION['user_ID'];
+			UPDATE " . TABLE_PREFIX . "user
+			SET password = SHA2('" . $password . "', 256)
+			WHERE
+			user_ID = " . $_SESSION['user_ID'];
 
             if ($mysqli->query($query) && ( $mysqli->affected_rows == 1 )) {
                 $ok = true;
@@ -211,6 +255,10 @@ class User extends Model {
             $this->email = $a['email'];
             $this->firstname = $a['firstname'];
             $this->lastname = $a['lastname'];
+            $this->address = $a['address'];
+            $this->postal_code = $a['postal_code'];
+            $this->city = $a['city'];
+            $this->phone = $a['phone'];
             $this->activation_code = $a['activation_code'];
             $this->registration_date = $a['registration_date'];
 
@@ -223,18 +271,17 @@ class User extends Model {
     /**
      * Checks if the user exists in the database.
      *
-     * Returns the user's email, first and last name, activation code and
-     * registration date as an array if the user exists in the database.
+     * Returns the user's email if the user exists in the database.
      * Returns false if the user doesn't exist in the database.
      */
     public function exists_in_db($throw_exceptions = aslib\Exception::THROW_ALL) {
         if ($mysqli = aslib\MySQLi::connect2db("We apologize, but a technical error has occured.", $throw_exceptions)) {
             // Checking if an identical user is already registered in the database.
             $query = "
-                SELECT email, firstname, lastname, activation_code, registration_date
-                FROM " . TABLE_PREFIX . "user
-                WHERE
-                UPPER(email) = UPPER('" . $this->email . "')";
+			SELECT email, firstname, lastname, address, postal_code, city, phone, activation_code, registration_date
+			FROM " . TABLE_PREFIX . "user
+			WHERE
+                        UPPER(email) = UPPER('" . $this->email . "')";
 
             if ($result = $mysqli->query($query)) {
                 // If the user is previously registered.
@@ -421,7 +468,11 @@ class User extends Model {
 
     /**
      * Matches the given password against the one stored in the database
-     * for this user. (Identified by the user's email address).
+     * for this user.
+     *
+     * Identifies the user in the database by user_ID if the user_ID is set
+     * in the user object. Otherwise, email address is used to identify the
+     * user in the database.
      *
      * Returns true if the password given in the method's input parameter 
      * matches the one that is stored in the database.
@@ -433,12 +484,17 @@ class User extends Model {
             // Retrieve the user's current password from the database
             // and compare it against the entered password.
             $query = "
-                SELECT password
-                FROM " . TABLE_PREFIX . "user
-                WHERE
-                UPPER(email) = UPPER('" . $this->email . "')
-                AND
-                password LIKE SHA2('" . trim($password) . "', 256)";
+			SELECT password
+			FROM " . TABLE_PREFIX . "user
+			WHERE ";
+
+            $query .= isset($this->user_ID) ?
+                    "user_ID = " . $this->user_ID :
+                    "UPPER(email) = UPPER('" . $this->email . "')";
+
+            $query .= "		
+			AND
+			password LIKE SHA('" . trim($password) . "')";
 
             if ($result = $mysqli->query($query)) {
                 // Check for a match between the entered 'old' password and the one on file.
@@ -453,6 +509,13 @@ class User extends Model {
     }
 
     /**
+     * User_ID get function.
+     */
+    public function get_user_ID() {
+        return $this->user_ID;
+    }
+
+    /**
      * Firstname get function.
      */
     public function get_firstname() {
@@ -464,6 +527,34 @@ class User extends Model {
      */
     public function get_lastname() {
         return $this->lastname;
+    }
+
+    /**
+     * Lastname get function.
+     */
+    public function get_address() {
+        return $this->address;
+    }
+
+    /**
+     * Lastname get function.
+     */
+    public function get_postal_code() {
+        return $this->postal_code;
+    }
+
+    /**
+     * Lastname get function.
+     */
+    public function get_city() {
+        return $this->city;
+    }
+
+    /**
+     * Phone get function.
+     */
+    public function get_phone() {
+        return $this->phone;
     }
 
     /**

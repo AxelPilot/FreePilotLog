@@ -18,6 +18,7 @@
 
 namespace com\axelsmidt\freepilotlog\views;
 
+use com\axelsmidt\aslib as aslib;
 use com\axelsmidt\freepilotlog\controllers as controllers;
 
 /**
@@ -43,7 +44,7 @@ class Register_User extends View {
         // Save the user to the database.
         try {
             new controllers\Register_User();
-        } catch (aslib\DbErrorException $e) { // If unsuccessul, catch exceptions and return to registration form.
+        } catch (aslib\DbErrorException $e) { // If unsuccessfull, catch exceptions and return to registration form.
             ?><div class="Error"><?php echo $e->getArrayMessage(); ?></div>
             <p><div class="Error">A technical error has occured. Please try again later.</div></p><?php
         } catch (aslib\DbException $e) {
