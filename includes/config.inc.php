@@ -77,7 +77,7 @@ spl_autoload_register(function ($class) {
 
 /**
  * Returns true if the user is logged in.
- * Redirects the user to the login page if the user is not logged in.
+ * Returns false if the user is not logged in.
  */
 function is_loggedIn() {
     // If no user_ID or first_name variable exists, redirect the user.
