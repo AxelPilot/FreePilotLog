@@ -22,7 +22,8 @@ namespace com\axelsmidt\freepilotlog\controllers;
 use com\axelsmidt\freepilotlog\models as models;
 
 /**
- * Description of Login
+ * Signs the user into a user account based on the entered
+ * email address and password.
  *
  * @author Axel Smidt <http://AxelSmidt.com>
  */
@@ -31,8 +32,8 @@ class Login extends Controller {
     public function __construct() {
         // Sending login request to the model (models\User).
         $user = new models\User($_POST['email'], $_POST['password']);
-
-        // If login was successful, create session variables with user info.
+        
+        // If login was successful, create session variables with user data.
         $_SESSION['email'] = $user->get_email();
         $_SESSION['firstname'] = $user->get_firstname();
         $_SESSION['lastname'] = $user->get_lastname();

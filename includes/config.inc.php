@@ -80,7 +80,6 @@ spl_autoload_register(function ($class) {
  * Returns false if the user is not logged in.
  */
 function is_loggedIn() {
-    // If no user_ID or first_name variable exists, redirect the user.
     return (!isset($_SESSION['email']) || !isset($_SESSION['firstname']) || !isset($_SESSION['lastname'])) ? false : true;
 }
 

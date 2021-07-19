@@ -23,7 +23,7 @@ use com\axelsmidt\aslib as aslib;
 use com\axelsmidt\freepilotlog\controllers as controllers;
 
 /**
- *
+ * Sign in View.
  */
 class Login extends View {
 
@@ -58,7 +58,7 @@ class Login extends View {
             $this->validation_exceptions = $e->getArrayMessage();
         }
 
-        new views\Login_Form($this->url, $this->validation_exceptions);
+        new Login_Form($this->url, $this->validation_exceptions);
     }
 
     /**

@@ -72,7 +72,7 @@ $(function ()
      */
     $('#password').on('change', function ()
     {
-        validation(this, /^[a-zA-Z0-9]{4,20}$/, 'You entered an invalid password.');
+        validation(this, /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/, 'You entered an invalid password.');
     });
 
     /**

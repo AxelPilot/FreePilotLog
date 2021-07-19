@@ -105,7 +105,7 @@ class Register_User_Form {
                 </div>
 
                 <div class="FormField NoFloat">
-                    <b>Password:</b> <small>Must be between 8-20 characters.</small><br />
+                    <b>Password:</b> <small>(Min 8 and max 20 characters, at least one uppercase letter, one lowercase letter, one number and one special character).</small><br />
                     <div class="FloatLeft" style="margin-right:8px";>
                         <input type="password" id="password" name="password1" size="41" maxlength="20" style="width:277px;<?php
                         if (isset($this->validation_exceptions['new_password'])) {

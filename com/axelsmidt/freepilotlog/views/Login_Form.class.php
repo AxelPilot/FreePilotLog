@@ -3,7 +3,7 @@
 namespace com\axelsmidt\freepilotlog\views;
 
 /**
- *
+ * Sign in Form.
  */
 class Login_Form {
 
@@ -52,7 +52,7 @@ class Login_Form {
                 </div>
 
                 <div class="FormField NoFloat">
-                    <b>Password:</b> <small>Letters and numbers only. Must be between 4-20 characters.</small><br />
+                    <b>Password:</b><br />
                     <div class="FloatLeft" style="margin-right:8px";>
                         <input type="password" id="password" name="password" size="40" maxlength="20" style="width:277px;<?php
                         if (isset($validation_exceptions['password'])) {

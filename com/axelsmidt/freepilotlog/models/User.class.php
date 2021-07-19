@@ -45,7 +45,6 @@ class User extends Model {
             $firstname = NULL,
             $throw_exceptions = aslib\Exception::THROW_ALL) {
 
-
         // Logging into an existing user account and verifying that the user
         // has entered the correct password.
         // 
@@ -59,11 +58,11 @@ class User extends Model {
                     // Retrieving the user account data.
                     if (!$this->retrieve_from_db($throw_exceptions)) {
                         if ($throw_exceptions >= AsException::THROW_DB) {
-                            throw new AsDbException('The user doesn\'t exist.');
+                            throw new aslib\DbException('The user doesn\'t exist.');
                         }
                     }
                 } else {
-                    throw new AsDbException('You have not activated your account.');
+                    throw new aslib\DbException('You have not activated your account.');
                 }
             }
         }
@@ -92,7 +91,6 @@ class User extends Model {
         if (isset($old_password) && isset($new_password) && isset($confirmed_password) && ( $this->validate_password($old_password, $new_password, $confirmed_password) === true )) {
             if (!$this->save_new_password_to_db($new_password) && $throw_exceptions >= aslib\Exception::THROW_DB_ERROR) {
                 throw new aslib\DbErrorException("We apologize, but a technical error has occured.");
-                return false;
             } else {
                 return true;
             }
@@ -105,6 +103,7 @@ class User extends Model {
      * 
      * Returns true if the account is activated.
      * Returns false if the account has not been activated.
+     * Returns false if the account is not found.
      */
     public function has_activated($password, $throw_exceptions = aslib\Exception::THROW_ALL) {
         $ok = false;
@@ -222,7 +221,9 @@ class User extends Model {
      * retrieves the correct user ID from the database and stores it
      * in the user object.
      *
-     * Returns the user ID if the event is found in the database.
+     * Returns an array containing user data if the user is found in the
+     * database.
+     * 
      * Returns false if the user is not found in the database.
      */
     protected function retrieve_from_db($throw_exceptions = aslib\Exception::THROW_ALL) {
@@ -408,9 +409,10 @@ class User extends Model {
             $confirmed_password = NULL,
             $throw_exceptions = aslib\Exception::THROW_ALL) {
         $exceptions = array();
+        $password_preg_string = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/i";
 
         if (isset($old_password)) {
-            if (preg_match("/^[[:alnum:]]{4,20}$/i", trim($old_password)) !== 1) {
+            if (preg_match($password_preg_string, trim($old_password)) !== 1) {
                 $exceptions['password'] = 'You entered an invalid password.';
             } elseif (!$this->match_password_against_db($old_password, $throw_exceptions)) {
                 $exceptions['password'] = 'The username and/or password are incorrect.';
@@ -418,7 +420,7 @@ class User extends Model {
         }
 
         if (( count($exceptions) <= 0 ) && isset($new_password)) {
-            if (preg_match("/^[[:alnum:]]{4,20}$/i", trim($new_password)) !== 1) {
+            if (preg_match($password_preg_string, trim($new_password)) !== 1) {
                 $exceptions['new_password'] = 'You entered an invalid password.';
             }
 
